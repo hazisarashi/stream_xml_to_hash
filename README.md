@@ -14,6 +14,14 @@ REXML::StreamListener を使用して、XML を Hash に変換するモジュー
 		p row #=> {:name=>"Tag1", :text=>"Content", :attrs=>{"attr"=>"value"} :children=>[:name=>"ChildTagName", :text=>"Content"}, ...]}
 	end
 
+ToDo
+----
+
+- テストを書く
+- gem化出来る状態にする
+- 入れ子への対応
+
+
 Copyright
 ---------
 
