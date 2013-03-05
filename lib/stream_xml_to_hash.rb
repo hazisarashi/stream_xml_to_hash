@@ -19,7 +19,7 @@ module StreamXMLToHash
   # タグの開始から終わりまでのデータをハッシュ化します。
   # 
   # ハッシュ化したデータは、タグが終わり次第  *row* として *block* で受け取ることが出来ます。
-  def convert source, capture_tag, &block
+  def convert(source, capture_tag, &block)
     capture_tag.map! { |tag| tag.to_sym } # capture_tag の内容を全てシンボルに変換
 
     listener = Listener.new(capture_tag) do |row|
@@ -42,7 +42,7 @@ module StreamXMLToHash
     # - *capture_tag* の処理中に *capture_tag* に含まれるタグが出現した場合もエラーになります。
     # 
     # *TODO:* *capture_tag* を適切なオブジェクトにし、孫タグなども問題なく捕捉出来るようにする。
-    def initialize capture_tag, &block
+    def initialize(capture_tag, &block)
       # キャプチャするタグ一覧
       @capture_tag = capture_tag
 
@@ -57,8 +57,8 @@ module StreamXMLToHash
       @now_tag = {}
     end
 
-    def tag_start name, attrs
-      puts "<#{name}>" if $DEBUG
+    def tag_start(name, attrs)
+      debug_line("<#{name}>")
       
       if during_capture?
         require "#{@now_tag[:name]}のタグが終わる前に新しいタグ(#{name})が出現しました。" unless @now_tag.empty?
@@ -72,7 +72,7 @@ module StreamXMLToHash
     end
 
     def tag_end name
-      puts "</#{name}>" if $DEBUG
+      debug_line("<#{name}>")
 
       if @now_tag[:name] == name
         @capture_data[:children] = [] unless @capture_data.has_key? :children
@@ -81,17 +81,13 @@ module StreamXMLToHash
         @now_tag = {}
       end
 
-      if @capture_data[:name] == name
-        end_capture(name)
-      end
+      end_capture(name) if @capture_data[:name] == name
     end
 
     def text text
-      if text =~ /^\s+$/ or text.empty?
-        return
-      end
+      return if text =~ /^\s+$/ or text.empty?
 
-      puts "text : #{text}" if $DEBUG
+      debug_line("text : #{text}")
 
       if !@now_tag.empty? and during_capture?
         @now_tag[:text] = text
@@ -104,15 +100,13 @@ module StreamXMLToHash
       end
     end
 
-    def start_capture name, attrs
+    def start_capture(name, attrs)
       require "#{@capture_data[:name]}のタグが終わる前に同名のタグが開始されました。" if @capture_data[:name] == name
 
       @capture_data = {name:name}
-      unless attrs.empty?
-        @capture_data[:attrs] = attrs
-      end
+      @capture_data[:attrs] = attrs unless attrs.empty?
 
-      puts "start_capture: #{name}" if $DEBUG
+      debug_line("start_capture: #{name}")
     end
 
     def end_capture name
@@ -123,17 +117,20 @@ module StreamXMLToHash
     def during_capture?
       !@capture_data.empty?
     end
+    
+    protected
+    
+    def debug_line(debug_str)
+      puts debug_str if $DEBUG
+    end
   end
 
   module HashingTheChildren
     def children_to_hash
-      new_hash = {}
-      self[:children].each do |child|
+      self[:children].inject(Hash.new) do |new_hash,child|
         require "タグ名が重複している為、変換できませんでした。" if new_hash.has_key? child[:name].to_sym
         new_hash[child[:name].to_sym] = child[:text]
       end
-
-      return new_hash
     end
   end
 end
