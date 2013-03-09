@@ -133,13 +133,11 @@ module StreamXMLToHash
 
   module HashingTheChildren
     def children_to_hash
-      new_hash = {}
-      self[:children].each do |child|
+      self[:children].inject(Hash.new) do |new_hash,child|
         require "タグ名が重複している為、変換できませんでした。" if new_hash.has_key? child[:name].to_sym
         new_hash[child[:name].to_sym] = child[:text]
+        new_hash
       end
-
-      return new_hash
     end
   end
 end
