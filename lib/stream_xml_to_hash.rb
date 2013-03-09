@@ -19,7 +19,7 @@ module StreamXMLToHash
   # タグの開始から終わりまでのデータをハッシュ化します。
   # 
   # ハッシュ化したデータは、タグが終わり次第  *row* として *block* で受け取ることが出来ます。
-  def convert source, capture_tag, &block
+  def convert(source, capture_tag, &block)
     capture_tag.map! { |tag| tag.to_sym } # capture_tag の内容を全てシンボルに変換
 
     listener = Listener.new(capture_tag) do |row|
@@ -42,7 +42,7 @@ module StreamXMLToHash
     # - *capture_tag* の処理中に *capture_tag* に含まれるタグが出現した場合もエラーになります。
     # 
     # *TODO:* *capture_tag* を適切なオブジェクトにし、孫タグなども問題なく捕捉出来るようにする。
-    def initialize capture_tag, &block
+    def initialize(capture_tag, &block)
       # キャプチャするタグ一覧
       @capture_tag = capture_tag
 
@@ -57,7 +57,7 @@ module StreamXMLToHash
       @now_tag = {}
     end
 
-    def tag_start name, attrs
+    def tag_start(name, attrs)
       puts "<#{name}>" if $DEBUG
       
       if during_capture?
@@ -104,7 +104,7 @@ module StreamXMLToHash
       end
     end
 
-    def start_capture name, attrs
+    def start_capture(name, attrs)
       require "#{@capture_data[:name]}のタグが終わる前に同名のタグが開始されました。" if @capture_data[:name] == name
 
       @capture_data = {name:name}
