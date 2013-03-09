@@ -20,12 +20,7 @@ module StreamXMLToHash
   # 
   # ハッシュ化したデータは、タグが終わり次第  *row* として *block* で受け取ることが出来ます。
   def convert(source, capture_tag, &block)
-    capture_tag.map! { |tag| tag.to_sym } # capture_tag の内容を全てシンボルに変換
-
-    listener = Listener.new(capture_tag) do |row|
-      yield(row)
-    end
-    REXML::Document.parse_stream(source, listener)
+    REXML::Document.parse_stream(source, Listener.new(capture_tag.map{|tag|tag.to_sym }){|row| yield(row)})
   end
 
   module_function :convert
