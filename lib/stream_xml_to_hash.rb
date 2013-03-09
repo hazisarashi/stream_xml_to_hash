@@ -81,15 +81,11 @@ module StreamXMLToHash
         @now_tag = {}
       end
 
-      if @capture_data[:name] == name
-        end_capture(name)
-      end
+      end_capture(name) if @capture_data[:name] == name
     end
 
     def text text
-      if text =~ /^\s+$/ or text.empty?
-        return
-      end
+      return if text =~ /^\s+$/ or text.empty?
 
       debug_line "text : #{text}"
 
@@ -99,18 +95,14 @@ module StreamXMLToHash
         return
       end
 
-      if during_capture? and !@capture_data.has_key? :text
-        @capture_data[:text] = text
-      end
+      @capture_data[:text] = text if during_capture? and !@capture_data.has_key? :text
     end
 
     def start_capture(name, attrs)
       require "#{@capture_data[:name]}のタグが終わる前に同名のタグが開始されました。" if @capture_data[:name] == name
 
       @capture_data = {name:name}
-      unless attrs.empty?
-        @capture_data[:attrs] = attrs
-      end
+      @capture_data[:attrs] = attrs unless attrs.empty?
 
       debug_line "start_capture: #{name}"
     end
