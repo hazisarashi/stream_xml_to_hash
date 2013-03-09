@@ -58,7 +58,7 @@ module StreamXMLToHash
     end
 
     def tag_start(name, attrs)
-      puts "<#{name}>" if $DEBUG
+      debug_line "<#{name}>"
       
       if during_capture?
         require "#{@now_tag[:name]}のタグが終わる前に新しいタグ(#{name})が出現しました。" unless @now_tag.empty?
@@ -72,7 +72,7 @@ module StreamXMLToHash
     end
 
     def tag_end name
-      puts "</#{name}>" if $DEBUG
+      debug_line "<#{name}>"
 
       if @now_tag[:name] == name
         @capture_data[:children] = [] unless @capture_data.has_key? :children
@@ -91,7 +91,7 @@ module StreamXMLToHash
         return
       end
 
-      puts "text : #{text}" if $DEBUG
+      debug_line "text : #{text}"
 
       if !@now_tag.empty? and during_capture?
         @now_tag[:text] = text
@@ -112,7 +112,7 @@ module StreamXMLToHash
         @capture_data[:attrs] = attrs
       end
 
-      puts "start_capture: #{name}" if $DEBUG
+      debug_line "start_capture: #{name}"
     end
 
     def end_capture name
@@ -122,6 +122,12 @@ module StreamXMLToHash
 
     def during_capture?
       !@capture_data.empty?
+    end
+    
+    protected
+
+    def debug_line info
+      puts info if $DEBUG
     end
   end
 
